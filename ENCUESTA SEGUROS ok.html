@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trivia de Inducción - G&R</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f2f9f9;
+      padding: 20px;
+      text-align: center;
+      color: #0e2a36;
+    }
+    img.logo {
+      width: 180px;
+      margin-bottom: 20px;
+    }
+    .question-container {
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 600px;
+      margin: auto;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+    .option {
+      background-color: #e0f2f1;
+      margin: 10px 0;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .option.correct {
+      background-color: #a3e4a3;
+    }
+    .option.incorrect {
+      background-color: #f5a3a3;
+    }
+    .option.disabled {
+      pointer-events: none;
+      opacity: 0.8;
+    }
+    button {
+      padding: 10px 24px;
+      margin-top: 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      background-color: #197278;
+      color: white;
+      cursor: pointer;
+    }
+    button:disabled {
+      background-color: #9bbfc1;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <img src="LOGO.jpg" alt="Logo G&R Asesores Patrimoniales" class="logo animate__animated animate__fadeInDown" />
+  <div class="question-container animate__animated animate__fadeIn" id="quiz-container">
+    <h2 id="question"></h2>
+    <div id="options"></div>
+    <button id="nextBtn" onclick="nextQuestion()" disabled>Siguiente</button>
+  </div>
+  <div id="result" class="question-container animate__animated animate__fadeIn" style="display:none;"></div>
+
+  <script>
+    const quiz = [
+      { q: "¿Qué es un seguro con componente de inversión?", options: ["Protección sin ahorro", "Un plan bancario", "Un seguro que protege e invierte", "Un crédito personal"], answer: 2 },
+      { q: "¿Cuál es una ventaja de los seguros con ahorro?", options: ["No generan rendimiento", "No son deducibles", "Tienen beneficios fiscales y protección", "Solo aplican en accidentes"], answer: 2 },
+      { q: "¿Qué es una UDI?", options: ["Unidad de Inversión", "Unidad de Deuda Institucional", "Un fondo de ahorro", "Un crédito hipotecario"], answer: 0 },
+      { q: "¿Cuál es una característica de un seguro tradicional?", options: ["Tiene componente de inversión", "Solo protege sin ahorro", "Se maneja en acciones", "Es como un pagaré"], answer: 1 },
+      { q: "¿Qué protege un seguro de vida?", options: ["La salud", "El ahorro", "El patrimonio en caso de fallecimiento", "Los automóviles"], answer: 2 },
+      { q: "¿Qué es un seguro dotal?", options: ["Un crédito educativo", "Un seguro con protección y ahorro a plazo fijo", "Un seguro médico", "Una inversión en bolsa"], answer: 1 },
+      { q: "¿Cuál es la edad ideal para iniciar un seguro con inversión?", options: ["A partir de los 60 años", "Cuando se está retirado", "Cuanto antes, mejor", "Después de los 40"], answer: 2 },
+      { q: "¿Qué significa diversificar una inversión?", options: ["Invertir solo en un lugar seguro", "Poner todo en acciones", "Usar distintas herramientas financieras", "Invertir en oro únicamente"], answer: 2 },
+      { q: "¿Qué beneficio tiene contratar un seguro joven?", options: ["Pagas más", "No es recomendable", "Menor costo y mayor rendimiento", "Solo cubre accidentes"], answer: 2 },
+      { q: "¿Qué hace un asesor patrimonial?", options: ["Vende autos", "Brinda soluciones financieras y de protección", "Cobra impuestos", "Realiza auditorías"], answer: 1 },
+      { q: "¿Qué es una prima en seguros?", options: ["La suma asegurada", "El pago periódico del seguro", "Un bono anual", "Una inversión bancaria"], answer: 1 },
+      { q: "¿Qué diferencia a un seguro flexible?", options: ["Se puede ajustar a tus necesidades", "Es más caro", "Solo cubre accidentes", "No ofrece ahorro"], answer: 0 },
+      { q: "¿Cuál es una meta común para contratar un seguro con inversión?", options: ["Viajar", "Comprar ropa", "Retiro o educación de los hijos", "Pagar deudas"], answer: 2 },
+      { q: "¿Qué es el fondo de ahorro dentro de un seguro?", options: ["Un préstamo", "Un depósito sin intereses", "Un capital que crece con el tiempo", "Un seguro médico"], answer: 2 },
+      { q: "¿Qué sucede si dejas de pagar tu seguro?", options: ["Sigue vigente", "Aumenta el valor", "Pierdes cobertura y beneficios", "Te devuelven intereses"], answer: 2 },
+      { q: "¿Qué documentos se requieren para contratar un seguro?", options: ["INE y RFC", "Pasaporte", "Solo CURP", "Acta de nacimiento"], answer: 0 },
+      { q: "¿Cuál es el plazo mínimo recomendado para un seguro con inversión?", options: ["1 año", "3 años", "5 años o más", "10 días"], answer: 2 },
+      { q: "¿Qué entidad regula a las aseguradoras en México?", options: ["CONDUSEF", "SAT", "CNSF", "SHCP"], answer: 2 },
+      { q: "¿Qué significa ser beneficiario de un seguro?", options: ["El que paga la póliza", "El agente de seguros", "La persona que recibe el dinero en caso de siniestro", "El banco"], answer: 2 },
+      { q: "¿Qué sucede con el dinero en un seguro si no ocurre un siniestro?", options: ["Se pierde", "Se convierte en ahorro o se recupera parcialmente según el plan", "Lo cobra el banco", "Se dona"], answer: 1 }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+
+    function showQuestion() {
+      const q = quiz[currentQuestion];
+      document.getElementById("question").textContent = `Pregunta ${currentQuestion + 1}: ${q.q}`;
+      const optionsDiv = document.getElementById("options");
+      optionsDiv.innerHTML = "";
+      q.options.forEach((opt, index) => {
+        const div = document.createElement("div");
+        div.textContent = opt;
+        div.className = "option animate__animated animate__fadeInUp";
+        div.addEventListener("click", () => selectAnswer(index));
+        optionsDiv.appendChild(div);
+      });
+      document.getElementById("nextBtn").disabled = true;
+    }
+
+    function selectAnswer(selectedIndex) {
+      const q = quiz[currentQuestion];
+      const options = document.querySelectorAll(".option");
+      options.forEach((opt, i) => {
+        opt.classList.add("disabled");
+        if (i === q.answer) opt.classList.add("correct");
+        if (i === selectedIndex && i !== q.answer) opt.classList.add("incorrect");
+      });
+      if (selectedIndex === q.answer) score++;
+      document.getElementById("nextBtn").disabled = false;
+    }
+
+    function nextQuestion() {
+      currentQuestion++;
+      if (currentQuestion < quiz.length) {
+        showQuestion();
+      } else {
+        showResult();
+      }
+    }
+
+    function showResult() {
+      document.getElementById("quiz-container").style.display = "none";
+      const resultDiv = document.getElementById("result");
+      let feedback = "";
+      if (score === 20) feedback = "¡Excelente! ¡Dominaste todos los conceptos!";
+      else if (score >= 15) feedback = "¡Muy bien! Solo unos pequeños detalles por mejorar.";
+      else if (score >= 10) feedback = "Buen esfuerzo, sigue aprendiendo.";
+      else feedback = "Revisa los conceptos clave. ¡Tú puedes mejorar!";
+
+      resultDiv.innerHTML = `<h2>Tu puntaje: ${score}/20</h2><p>${feedback}</p>`;
+      resultDiv.style.display = "block";
+    }
+
+    showQuestion();
+  </script>
+</body>
+</html>
+x|
